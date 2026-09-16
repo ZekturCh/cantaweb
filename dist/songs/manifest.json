@@ -1,0 +1,23 @@
+[
+  {
+    "id": "song-1",
+    "title": "Pulso Solar",
+    "artist": "Demo local",
+    "src": "songs/pulso-solar.wav",
+    "duration": "00:18"
+  },
+  {
+    "id": "song-2",
+    "title": "Ruta Neon",
+    "artist": "Demo local",
+    "src": "songs/ruta-neon.wav",
+    "duration": "00:18"
+  },
+  {
+    "id": "song-3",
+    "title": "Cabina Azul",
+    "artist": "Demo local",
+    "src": "songs/cabina-azul.wav",
+    "duration": "00:18"
+  }
+]

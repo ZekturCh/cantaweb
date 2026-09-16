@@ -1,0 +1,10 @@
+{
+  "name": "CantaWeb",
+  "short_name": "CantaWeb",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#101820",
+  "theme_color": "#101820",
+  "description": "Karaoke portatil para tablet con micrófono USB y parlante cableado."
+}
+
