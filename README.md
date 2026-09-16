@@ -22,11 +22,32 @@ Incluye 3 audios demo generados para prueba. Reemplazalos por tus audios reales 
 - `songs/ruta-neon.wav`
 - `songs/cabina-azul.wav`
 
-Luego ajusta titulos/artistas en:
+Luego ajusta titulos, artistas, audio y letra en:
 
 ```json
 songs/manifest.json
 ```
+
+Cada cancion puede tener su letra sincronizada en formato `.lrc`:
+
+```json
+{
+  "title": "Mi cancion",
+  "artist": "Mi artista",
+  "src": "songs/mi-cancion.mp3",
+  "lyricsSrc": "songs/lyrics/mi-cancion.lrc",
+  "duration": "03:42"
+}
+```
+
+Formato de letra:
+
+```text
+[00:12.30] Primera linea
+[00:16.80] Segunda linea
+```
+
+No incluyas letras comerciales en el repo publico si no tienes permiso para distribuirlas.
 
 No subas canciones comerciales a GitHub si no tienes derechos para distribuirlas.
 

@@ -4,6 +4,7 @@
     "title": "Pulso Solar",
     "artist": "Demo local",
     "src": "songs/pulso-solar.wav",
+    "lyricsSrc": "songs/lyrics/pulso-solar.lrc",
     "duration": "00:18"
   },
   {
@@ -11,6 +12,7 @@
     "title": "Ruta Neon",
     "artist": "Demo local",
     "src": "songs/ruta-neon.wav",
+    "lyricsSrc": "songs/lyrics/ruta-neon.lrc",
     "duration": "00:18"
   },
   {
@@ -18,6 +20,7 @@
     "title": "Cabina Azul",
     "artist": "Demo local",
     "src": "songs/cabina-azul.wav",
+    "lyricsSrc": "songs/lyrics/cabina-azul.lrc",
     "duration": "00:18"
   }
 ]

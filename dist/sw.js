@@ -1,4 +1,4 @@
-const CACHE_NAME = "cantaweb-v1";
+const CACHE_NAME = "cantaweb-v2";
 const ASSETS = [
   "./",
   "./index.html",
@@ -6,6 +6,9 @@ const ASSETS = [
   "./app.js",
   "./manifest.webmanifest",
   "./songs/manifest.json",
+  "./songs/lyrics/pulso-solar.lrc",
+  "./songs/lyrics/ruta-neon.lrc",
+  "./songs/lyrics/cabina-azul.lrc",
   "./songs/pulso-solar.wav",
   "./songs/ruta-neon.wav",
   "./songs/cabina-azul.wav",

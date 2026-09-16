@@ -6,6 +6,8 @@ const elements = {
   trackKicker: document.querySelector("#track-kicker"),
   trackTitle: document.querySelector("#track-title"),
   trackArtist: document.querySelector("#track-artist"),
+  lyricsLines: document.querySelector("#lyrics-lines"),
+  lyricsState: document.querySelector("#lyrics-state"),
   playToggle: document.querySelector("#play-toggle"),
   previousSong: document.querySelector("#previous-song"),
   nextSong: document.querySelector("#next-song"),
@@ -31,9 +33,30 @@ const elements = {
 };
 
 const fallbackSongs = [
-  { id: "song-1", title: "Pulso Solar", artist: "Demo local", src: "songs/pulso-solar.wav", duration: "00:18" },
-  { id: "song-2", title: "Ruta Neon", artist: "Demo local", src: "songs/ruta-neon.wav", duration: "00:18" },
-  { id: "song-3", title: "Cabina Azul", artist: "Demo local", src: "songs/cabina-azul.wav", duration: "00:18" },
+  {
+    id: "song-1",
+    title: "Pulso Solar",
+    artist: "Demo local",
+    src: "songs/pulso-solar.wav",
+    lyricsSrc: "songs/lyrics/pulso-solar.lrc",
+    duration: "00:18",
+  },
+  {
+    id: "song-2",
+    title: "Ruta Neon",
+    artist: "Demo local",
+    src: "songs/ruta-neon.wav",
+    lyricsSrc: "songs/lyrics/ruta-neon.lrc",
+    duration: "00:18",
+  },
+  {
+    id: "song-3",
+    title: "Cabina Azul",
+    artist: "Demo local",
+    src: "songs/cabina-azul.wav",
+    lyricsSrc: "songs/lyrics/cabina-azul.lrc",
+    duration: "00:18",
+  },
 ];
 
 const state = {
@@ -52,6 +75,9 @@ const state = {
   meterFrame: 0,
   isReady: false,
   manualOutputDevice: null,
+  lyrics: [],
+  activeLyricIndex: -1,
+  lyricLoadToken: 0,
 };
 
 function formatTime(seconds) {
@@ -70,6 +96,98 @@ function updateFaderLabels() {
   elements.micValue.textContent = `${Math.round(Number(elements.micVolume.value) * 100)}%`;
   const pan = Number(elements.backingPan.value);
   elements.panValue.textContent = Math.abs(pan) < 0.05 ? "Centro" : pan < 0 ? "Izq" : "Der";
+}
+
+function parseTimestamp(value) {
+  const match = value.match(/^(\d{1,2}):(\d{2})(?:[.:](\d{1,3}))?$/);
+  if (!match) return null;
+  const minutes = Number(match[1]);
+  const seconds = Number(match[2]);
+  const fraction = match[3] ? Number(match[3].padEnd(3, "0").slice(0, 3)) / 1000 : 0;
+  return minutes * 60 + seconds + fraction;
+}
+
+function parseLrc(lrcText) {
+  return lrcText
+    .split(/\r?\n/)
+    .flatMap((line) => {
+      const matches = [...line.matchAll(/\[([0-9:.]+)\]/g)];
+      const text = line.replace(/\[[^\]]+\]/g, "").trim();
+      if (!matches.length || !text) return [];
+      return matches
+        .map((match) => ({ time: parseTimestamp(match[1]), text }))
+        .filter((lineData) => lineData.time !== null);
+    })
+    .sort((a, b) => a.time - b.time);
+}
+
+function renderLyrics(lines) {
+  elements.lyricsLines.innerHTML = "";
+  if (!lines.length) {
+    const empty = document.createElement("p");
+    empty.textContent = "Esta cancion aun no tiene letra sincronizada.";
+    elements.lyricsLines.appendChild(empty);
+    return;
+  }
+
+  lines.forEach((line, index) => {
+    const row = document.createElement("p");
+    row.className = "lyric-line";
+    row.dataset.index = String(index);
+    row.textContent = line.text;
+    elements.lyricsLines.appendChild(row);
+  });
+}
+
+async function loadLyrics(song) {
+  const token = state.lyricLoadToken + 1;
+  state.lyricLoadToken = token;
+  state.lyrics = [];
+  state.activeLyricIndex = -1;
+  elements.lyricsState.textContent = "Cargando";
+  renderLyrics([]);
+
+  if (!song.lyricsSrc) {
+    elements.lyricsState.textContent = "Sin letra";
+    return;
+  }
+
+  try {
+    const response = await fetch(song.lyricsSrc, { cache: "no-store" });
+    if (!response.ok) throw new Error("No se pudo leer la letra");
+    const lrcText = await response.text();
+    if (token !== state.lyricLoadToken) return;
+    state.lyrics = parseLrc(lrcText);
+    renderLyrics(state.lyrics);
+    elements.lyricsState.textContent = state.lyrics.length ? "Sincronizada" : "Sin letra";
+    updateLyrics(elements.audio.currentTime);
+  } catch {
+    if (token !== state.lyricLoadToken) return;
+    elements.lyricsState.textContent = "Sin letra";
+    renderLyrics([]);
+  }
+}
+
+function updateLyrics(currentTime) {
+  if (!state.lyrics.length) return;
+  let activeIndex = -1;
+  for (let index = 0; index < state.lyrics.length; index += 1) {
+    if (state.lyrics[index].time <= currentTime + 0.12) {
+      activeIndex = index;
+    } else {
+      break;
+    }
+  }
+
+  if (activeIndex === state.activeLyricIndex) return;
+  state.activeLyricIndex = activeIndex;
+  document.querySelectorAll(".lyric-line").forEach((line, index) => {
+    line.classList.toggle("is-active", index === activeIndex);
+    line.classList.toggle("is-past", index < activeIndex);
+  });
+
+  const activeLine = document.querySelector(`.lyric-line[data-index="${activeIndex}"]`);
+  activeLine?.scrollIntoView({ block: "center", behavior: "smooth" });
 }
 
 async function loadSongs() {
@@ -115,6 +233,7 @@ function selectSong(index, startAfterSelect = false) {
   elements.seek.value = "0";
   elements.currentTime.textContent = "0:00";
   elements.totalTime.textContent = song.duration || "0:00";
+  loadLyrics(song);
   if (startAfterSelect) playSong();
 }
 
@@ -324,7 +443,7 @@ function readMeter() {
 async function playSong() {
   await ensureAudioGraph();
   await elements.audio.play().catch(() => {
-    setStatus("No encontre el archivo de audio. Revisa dist/songs/manifest.json.");
+    setStatus("No encontre el archivo de audio. Revisa songs/manifest.json.");
   });
   elements.playToggle.textContent = elements.audio.paused ? "Reproducir" : "Pausar";
 }
@@ -400,6 +519,7 @@ elements.audio.addEventListener("timeupdate", () => {
   if (Number.isFinite(elements.audio.duration) && elements.audio.duration > 0) {
     elements.seek.value = String(Math.round((elements.audio.currentTime / elements.audio.duration) * 1000));
   }
+  updateLyrics(elements.audio.currentTime);
 });
 
 elements.audio.addEventListener("ended", () => {
@@ -408,7 +528,7 @@ elements.audio.addEventListener("ended", () => {
 });
 
 elements.audio.addEventListener("error", () => {
-  setStatus("No pude cargar esta pista. Revisa que exista en dist/songs.");
+  setStatus("No pude cargar esta pista. Revisa que exista en songs.");
   elements.playToggle.textContent = "Reproducir";
 });
 

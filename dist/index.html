@@ -24,7 +24,7 @@
           <div class="brand-mark" aria-hidden="true">CW</div>
           <div>
             <h1 id="app-title">CantaWeb</h1>
-            <p>Mezcla musica y microfono en la tablet.</p>
+            <p>Elige una cancion y canta sobre la pista.</p>
           </div>
         </div>
 
@@ -53,77 +53,96 @@
         </div>
 
         <div class="song-grid" id="song-list" aria-label="Canciones disponibles"></div>
+
+        <section class="lyrics-panel" aria-labelledby="lyrics-title">
+          <div class="lyrics-header">
+            <span id="lyrics-title">Letra sincronizada</span>
+            <span id="lyrics-state">Lista</span>
+          </div>
+          <div id="lyrics-lines" class="lyrics-lines" aria-live="polite">
+            <p>Selecciona una cancion para ver la letra.</p>
+          </div>
+        </section>
       </section>
 
-      <section class="panel" aria-labelledby="audio-title">
-        <div class="panel-header">
-          <div>
-            <h2 id="audio-title">Audio</h2>
-            <p id="device-summary">Sin permisos de microfono todavia.</p>
+      <details class="panel settings-panel">
+        <summary>
+          <span>Configuracion de audio</span>
+          <small id="device-summary">Sin permisos de microfono todavia.</small>
+        </summary>
+
+        <section class="settings-body" aria-labelledby="audio-title">
+          <div class="panel-header">
+            <div>
+              <h2 id="audio-title">Audio</h2>
+              <p>Ajustes para microfono, salida y mezcla.</p>
+            </div>
+            <button id="refresh-devices" class="soft-button" type="button">Actualizar</button>
           </div>
-          <button id="refresh-devices" class="soft-button" type="button">Actualizar</button>
-        </div>
 
-        <div class="field-group">
-          <label for="mic-select">Microfono</label>
-          <select id="mic-select"></select>
-        </div>
+          <div class="settings-grid">
+            <div class="field-group">
+              <label for="mic-select">Microfono</label>
+              <select id="mic-select"></select>
+            </div>
 
-        <div class="field-group">
-          <label for="speaker-select">Salida</label>
-          <select id="speaker-select"></select>
-        </div>
-
-        <div class="meters">
-          <div>
-            <span>Entrada mic</span>
-            <div class="meter" aria-hidden="true">
-              <div id="mic-meter" class="meter-fill"></div>
+            <div class="field-group">
+              <label for="speaker-select">Salida</label>
+              <select id="speaker-select"></select>
             </div>
           </div>
-          <span id="latency-note">Latencia: por medir en dispositivo real</span>
-        </div>
 
-        <div class="test-row">
-          <button id="mic-test" class="soft-button" type="button">Probar mic</button>
-          <button id="output-permission" class="soft-button" type="button">Elegir salida</button>
-          <button id="speaker-test" class="soft-button" type="button">Probar parlante</button>
-        </div>
-
-        <div class="mixer">
-          <div class="fader">
-            <label for="music-volume">Musica</label>
-            <input id="music-volume" type="range" min="0" max="1.2" step="0.01" value="0.85" />
-            <span id="music-value">85%</span>
+          <div class="meters">
+            <div>
+              <span>Entrada mic</span>
+              <div class="meter" aria-hidden="true">
+                <div id="mic-meter" class="meter-fill"></div>
+              </div>
+            </div>
+            <span id="latency-note">Latencia: por medir en dispositivo real</span>
           </div>
 
-          <div class="fader">
-            <label for="mic-volume">Microfono</label>
-            <input id="mic-volume" type="range" min="0" max="2" step="0.01" value="0.9" />
-            <span id="mic-value">90%</span>
+          <div class="test-row">
+            <button id="mic-test" class="soft-button" type="button">Probar mic</button>
+            <button id="output-permission" class="soft-button" type="button">Elegir salida</button>
+            <button id="speaker-test" class="soft-button" type="button">Probar parlante</button>
           </div>
 
-          <div class="fader">
-            <label for="backing-pan">Balance</label>
-            <input id="backing-pan" type="range" min="-1" max="1" step="0.01" value="0" />
-            <span id="pan-value">Centro</span>
+          <div class="mixer">
+            <div class="fader">
+              <label for="music-volume">Musica</label>
+              <input id="music-volume" type="range" min="0" max="1.2" step="0.01" value="0.85" />
+              <span id="music-value">85%</span>
+            </div>
+
+            <div class="fader">
+              <label for="mic-volume">Microfono</label>
+              <input id="mic-volume" type="range" min="0" max="2" step="0.01" value="0.9" />
+              <span id="mic-value">90%</span>
+            </div>
+
+            <div class="fader">
+              <label for="backing-pan">Balance</label>
+              <input id="backing-pan" type="range" min="-1" max="1" step="0.01" value="0" />
+              <span id="pan-value">Centro</span>
+            </div>
           </div>
-        </div>
 
-        <label class="switch-row">
-          <input id="monitor-toggle" type="checkbox" />
-          <span>Escuchar microfono en parlante</span>
-        </label>
+          <label class="switch-row">
+            <input id="monitor-toggle" type="checkbox" />
+            <span>Escuchar microfono en parlante</span>
+          </label>
 
-        <p class="warning">
-          Sube el volumen poco a poco. Si hay acople, baja el microfono o aleja el parlante.
-        </p>
+          <p class="warning">
+            Sube el volumen poco a poco. Si hay acople, baja el microfono o aleja el parlante.
+          </p>
 
-        <details class="device-details">
-          <summary>Diagnostico de dispositivos</summary>
-          <pre id="device-debug">Sin lectura todavia.</pre>
-        </details>
-      </section>
+          <details class="device-details">
+            <summary>Diagnostico de dispositivos</summary>
+            <pre id="device-debug" class="device-debug">Sin lectura todavia.</pre>
+          </details>
+        </section>
+      </details>
     </main>
 
     <audio id="song-audio" preload="metadata"></audio>
