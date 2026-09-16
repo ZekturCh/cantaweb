@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#101820" />
+    <meta
+      name="description"
+      content="Karaoke portatil para tablet con microfono USB/2.4 GHz, salida cableada y mezcla local."
+    />
+    <title>CantaWeb</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23101820'/%3E%3Cpath d='M24 10h16v24a8 8 0 0 1-16 0V10Z' fill='%23ffce5c'/%3E%3Cpath d='M18 30a14 14 0 0 0 28 0' fill='none' stroke='%23f4f7f5' stroke-width='5' stroke-linecap='round'/%3E%3Cpath d='M32 45v8M23 53h18' stroke='%23f4f7f5' stroke-width='5' stroke-linecap='round'/%3E%3Ccircle cx='38' cy='18' r='4' fill='%232dd4bf'/%3E%3C/svg%3E"
+    />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="stage" aria-labelledby="app-title">
+        <div class="brand-row">
+          <div class="brand-mark" aria-hidden="true">CW</div>
+          <div>
+            <h1 id="app-title">CantaWeb</h1>
+            <p>Mezcla musica y microfono en la tablet.</p>
+          </div>
+        </div>
+
+        <div class="now-playing" aria-live="polite">
+          <span id="track-kicker">Lista de canciones</span>
+          <strong id="track-title">Elige una pista</strong>
+          <span id="track-artist">Carga hasta 3 audios en la carpeta songs.</span>
+        </div>
+
+        <div class="transport">
+          <button id="previous-song" class="icon-button" type="button" aria-label="Cancion anterior" title="Cancion anterior">
+            <span aria-hidden="true">‹</span>
+          </button>
+          <button id="play-toggle" class="play-button" type="button">
+            Activar audio
+          </button>
+          <button id="next-song" class="icon-button" type="button" aria-label="Siguiente cancion" title="Siguiente cancion">
+            <span aria-hidden="true">›</span>
+          </button>
+        </div>
+
+        <div class="timeline">
+          <span id="current-time">0:00</span>
+          <input id="seek" type="range" min="0" max="1000" value="0" aria-label="Progreso de la cancion" />
+          <span id="total-time">0:00</span>
+        </div>
+
+        <div class="song-grid" id="song-list" aria-label="Canciones disponibles"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="audio-title">
+        <div class="panel-header">
+          <div>
+            <h2 id="audio-title">Audio</h2>
+            <p id="device-summary">Sin permisos de microfono todavia.</p>
+          </div>
+          <button id="refresh-devices" class="soft-button" type="button">Actualizar</button>
+        </div>
+
+        <div class="field-group">
+          <label for="mic-select">Microfono</label>
+          <select id="mic-select"></select>
+        </div>
+
+        <div class="field-group">
+          <label for="speaker-select">Salida</label>
+          <select id="speaker-select"></select>
+        </div>
+
+        <div class="meters">
+          <div>
+            <span>Entrada mic</span>
+            <div class="meter" aria-hidden="true">
+              <div id="mic-meter" class="meter-fill"></div>
+            </div>
+          </div>
+          <span id="latency-note">Latencia: por medir en dispositivo real</span>
+        </div>
+
+        <div class="test-row">
+          <button id="mic-test" class="soft-button" type="button">Probar mic</button>
+          <button id="output-permission" class="soft-button" type="button">Elegir salida</button>
+          <button id="speaker-test" class="soft-button" type="button">Probar parlante</button>
+        </div>
+
+        <div class="mixer">
+          <div class="fader">
+            <label for="music-volume">Musica</label>
+            <input id="music-volume" type="range" min="0" max="1.2" step="0.01" value="0.85" />
+            <span id="music-value">85%</span>
+          </div>
+
+          <div class="fader">
+            <label for="mic-volume">Microfono</label>
+            <input id="mic-volume" type="range" min="0" max="2" step="0.01" value="0.9" />
+            <span id="mic-value">90%</span>
+          </div>
+
+          <div class="fader">
+            <label for="backing-pan">Balance</label>
+            <input id="backing-pan" type="range" min="-1" max="1" step="0.01" value="0" />
+            <span id="pan-value">Centro</span>
+          </div>
+        </div>
+
+        <label class="switch-row">
+          <input id="monitor-toggle" type="checkbox" />
+          <span>Escuchar microfono en parlante</span>
+        </label>
+
+        <p class="warning">
+          Sube el volumen poco a poco. Si hay acople, baja el microfono o aleja el parlante.
+        </p>
+
+        <details class="device-details">
+          <summary>Diagnostico de dispositivos</summary>
+          <pre id="device-debug">Sin lectura todavia.</pre>
+        </details>
+      </section>
+    </main>
+
+    <audio id="song-audio" preload="metadata"></audio>
+    <audio id="monitor-audio" autoplay playsinline></audio>
+    <audio id="tone-audio" autoplay playsinline></audio>
+    <script src="app.js"></script>
+  </body>
+</html>

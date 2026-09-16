@@ -14,18 +14,18 @@ Evita Bluetooth para monitorear la voz en vivo, porque agrega latencia.
 
 ## Canciones
 
-La app esta limitada a 3 canciones desde `dist/songs/manifest.json`.
+La app esta limitada a 3 canciones desde `songs/manifest.json`.
 
 Incluye 3 audios demo generados para prueba. Reemplazalos por tus audios reales cuando tengas las pistas:
 
-- `dist/songs/pulso-solar.wav`
-- `dist/songs/ruta-neon.wav`
-- `dist/songs/cabina-azul.wav`
+- `songs/pulso-solar.wav`
+- `songs/ruta-neon.wav`
+- `songs/cabina-azul.wav`
 
 Luego ajusta titulos/artistas en:
 
 ```json
-dist/songs/manifest.json
+songs/manifest.json
 ```
 
 No subas canciones comerciales a GitHub si no tienes derechos para distribuirlas.
@@ -35,7 +35,6 @@ No subas canciones comerciales a GitHub si no tienes derechos para distribuirlas
 Desde la carpeta `cantaweb`:
 
 ```bash
-cd dist
 python -m http.server 5173
 ```
 
