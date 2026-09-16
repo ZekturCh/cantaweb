@@ -16,6 +16,7 @@ const elements = {
   speakerSelect: document.querySelector("#speaker-select"),
   refreshDevices: document.querySelector("#refresh-devices"),
   micTest: document.querySelector("#mic-test"),
+  outputPermission: document.querySelector("#output-permission"),
   speakerTest: document.querySelector("#speaker-test"),
   musicVolume: document.querySelector("#music-volume"),
   micVolume: document.querySelector("#mic-volume"),
@@ -26,12 +27,13 @@ const elements = {
   micMeter: document.querySelector("#mic-meter"),
   monitorToggle: document.querySelector("#monitor-toggle"),
   deviceSummary: document.querySelector("#device-summary"),
+  deviceDebug: document.querySelector("#device-debug"),
 };
 
 const fallbackSongs = [
-  { id: "song-1", title: "Cancion 1", artist: "Demo", src: "songs/cancion-1.mp3", duration: "03:20" },
-  { id: "song-2", title: "Cancion 2", artist: "Demo", src: "songs/cancion-2.mp3", duration: "03:05" },
-  { id: "song-3", title: "Cancion 3", artist: "Demo", src: "songs/cancion-3.mp3", duration: "04:10" },
+  { id: "song-1", title: "Pulso Solar", artist: "Demo local", src: "songs/pulso-solar.wav", duration: "00:18" },
+  { id: "song-2", title: "Ruta Neon", artist: "Demo local", src: "songs/ruta-neon.wav", duration: "00:18" },
+  { id: "song-3", title: "Cabina Azul", artist: "Demo local", src: "songs/cabina-azul.wav", duration: "00:18" },
 ];
 
 const state = {
@@ -49,6 +51,7 @@ const state = {
   toneDestination: null,
   meterFrame: 0,
   isReady: false,
+  manualOutputDevice: null,
 };
 
 function formatTime(seconds) {
@@ -153,14 +156,27 @@ async function requestMic() {
   }
 
   const selectedMic = elements.micSelect.value;
-  state.micStream = await navigator.mediaDevices.getUserMedia({
-    audio: {
-      deviceId: selectedMic ? { exact: selectedMic } : undefined,
-      echoCancellation: false,
-      noiseSuppression: false,
-      autoGainControl: false,
-    },
-  });
+  try {
+    state.micStream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        deviceId: selectedMic ? { exact: selectedMic } : undefined,
+        echoCancellation: false,
+        noiseSuppression: false,
+        autoGainControl: false,
+      },
+    });
+  } catch (error) {
+    if (!selectedMic) throw error;
+    state.micStream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: false,
+        noiseSuppression: false,
+        autoGainControl: false,
+      },
+    });
+    elements.micSelect.value = "";
+    setStatus("Android no abrio ese micro por ID; usando entrada predeterminada.");
+  }
 
   if (state.micSource) state.micSource.disconnect();
   state.micSource = state.audioContext.createMediaStreamSource(state.micStream);
@@ -189,16 +205,22 @@ async function refreshDevices() {
 
   fillSelect(elements.micSelect, audioInputs, "Microfono predeterminado");
   fillSelect(elements.speakerSelect, audioOutputs, "Salida predeterminada");
+  if (state.manualOutputDevice) {
+    addManualOutputOption(state.manualOutputDevice);
+  }
 
   const outputSupport =
     typeof elements.audio.setSinkId === "function" ||
-    typeof state.audioContext?.setSinkId === "function";
+    typeof state.audioContext?.setSinkId === "function" ||
+    typeof navigator.mediaDevices.selectAudioOutput === "function";
   elements.speakerSelect.disabled = !outputSupport;
+  elements.outputPermission.disabled = typeof navigator.mediaDevices.selectAudioOutput !== "function";
   if (!outputSupport) {
     elements.speakerSelect.innerHTML = `<option value="">Salida del sistema</option>`;
   }
 
   setStatus(`${audioInputs.length || 1} entrada(s), ${outputSupport ? audioOutputs.length || 1 : "salida del sistema"} disponible(s).`);
+  updateDeviceDebug(devices, outputSupport);
 }
 
 function fillSelect(select, devices, fallbackLabel) {
@@ -218,6 +240,51 @@ function fillSelect(select, devices, fallbackLabel) {
 
   if ([...select.options].some((option) => option.value === previous)) {
     select.value = previous;
+  }
+}
+
+function addManualOutputOption(device) {
+  if (!device?.deviceId) return;
+  const exists = [...elements.speakerSelect.options].some((option) => option.value === device.deviceId);
+  if (!exists) {
+    const option = document.createElement("option");
+    option.value = device.deviceId;
+    option.textContent = device.label || "Salida elegida";
+    elements.speakerSelect.appendChild(option);
+  }
+  elements.speakerSelect.value = device.deviceId;
+}
+
+function updateDeviceDebug(devices, outputSupport) {
+  const flags = [
+    `getUserMedia: ${Boolean(navigator.mediaDevices?.getUserMedia)}`,
+    `enumerateDevices: ${Boolean(navigator.mediaDevices?.enumerateDevices)}`,
+    `selectAudioOutput: ${Boolean(navigator.mediaDevices?.selectAudioOutput)}`,
+    `audio.setSinkId: ${Boolean(elements.audio.setSinkId)}`,
+    `audioContext.setSinkId: ${Boolean(state.audioContext?.setSinkId)}`,
+    `salida programable: ${outputSupport}`,
+  ];
+  const rows = devices.map((device, index) => {
+    const label = device.label || "sin etiqueta hasta conceder permiso";
+    return `${index + 1}. ${device.kind} | ${label}`;
+  });
+  elements.deviceDebug.textContent = [...flags, "", ...rows].join("\n");
+}
+
+async function chooseOutputDevice() {
+  await ensureAudioGraph();
+  if (typeof navigator.mediaDevices.selectAudioOutput !== "function") {
+    setStatus("Este navegador no permite elegir salida desde la web.");
+    return;
+  }
+  try {
+    state.manualOutputDevice = await navigator.mediaDevices.selectAudioOutput();
+    addManualOutputOption(state.manualOutputDevice);
+    await setOutputDevice();
+    await refreshDevices();
+    setStatus("Salida elegida. Prueba el parlante para confirmar.");
+  } catch {
+    setStatus("No se eligio una salida nueva.");
   }
 }
 
@@ -293,10 +360,17 @@ elements.playToggle.addEventListener("click", togglePlayback);
 elements.previousSong.addEventListener("click", () => selectSong(state.currentIndex - 1, !elements.audio.paused));
 elements.nextSong.addEventListener("click", () => selectSong(state.currentIndex + 1, !elements.audio.paused));
 elements.refreshDevices.addEventListener("click", refreshDevices);
-elements.micTest.addEventListener("click", requestMic);
+elements.micTest.addEventListener("click", () => {
+  requestMic().catch(() => setStatus("No pude abrir el microfono. Revisa permisos de Android/Chrome."));
+});
+elements.outputPermission.addEventListener("click", chooseOutputDevice);
 elements.speakerTest.addEventListener("click", playTone);
-elements.micSelect.addEventListener("change", requestMic);
-elements.speakerSelect.addEventListener("change", setOutputDevice);
+elements.micSelect.addEventListener("change", () => {
+  requestMic().catch(() => setStatus("No pude cambiar a ese microfono."));
+});
+elements.speakerSelect.addEventListener("change", () => {
+  setOutputDevice().catch(() => setStatus("No pude cambiar a esa salida."));
+});
 elements.monitorToggle.addEventListener("change", () => {
   elements.monitorAudio.muted = !elements.monitorToggle.checked;
   elements.monitorToggle.closest(".switch-row").classList.toggle("is-live", elements.monitorToggle.checked);

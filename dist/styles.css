@@ -325,6 +325,32 @@ select {
   line-height: 1.5;
 }
 
+.device-details {
+  margin-top: 14px;
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+  color: var(--muted);
+}
+
+.device-details summary {
+  min-height: 36px;
+  cursor: pointer;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.device-debug {
+  overflow: auto;
+  max-height: 180px;
+  margin: 8px 0 0;
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.24);
+  color: var(--muted);
+  font: 0.78rem/1.45 ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  white-space: pre-wrap;
+}
+
 .is-live {
   box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.28);
 }
@@ -370,4 +396,3 @@ select {
     text-align: left;
   }
 }
-

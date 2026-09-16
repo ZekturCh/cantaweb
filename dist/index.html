@@ -86,6 +86,7 @@
 
         <div class="test-row">
           <button id="mic-test" class="soft-button" type="button">Probar mic</button>
+          <button id="output-permission" class="soft-button" type="button">Elegir salida</button>
           <button id="speaker-test" class="soft-button" type="button">Probar parlante</button>
         </div>
 
@@ -117,6 +118,11 @@
         <p class="warning">
           Sube el volumen poco a poco. Si hay acople, baja el microfono o aleja el parlante.
         </p>
+
+        <details class="device-details">
+          <summary>Diagnostico de dispositivos</summary>
+          <pre id="device-debug">Sin lectura todavia.</pre>
+        </details>
       </section>
     </main>
 
@@ -126,4 +132,3 @@
     <script src="app.js"></script>
   </body>
 </html>
-
